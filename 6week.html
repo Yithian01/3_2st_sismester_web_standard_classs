@@ -3,9 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Random Position, Color, and Size Text with Fade Effect</title>
+    <style>
+        body {
+            background-image: url('./resources/ginius.jpg');
+            position: relative;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        p {
+            color: aqua;
+            position: absolute;
+            opacity: 1;
+            transition: opacity 2s ease-in-out, color 0.5s ease-in-out, font-size 0.5s ease-in-out;
+            user-select: none; /* 텍스트 선택 방지 */
+            pointer-events: auto; /* 클릭 가능하도록 설정 */
+        }
+        p:hover {color: darkgreen;}
+        p:active {color: orange;}
+        #counter, #highScore, #timer {
+            position: absolute;
+            font-size: 2em;
+            color: white;
+        }
+        #counter {
+            top: 20px;
+        }
+        #highScore {
+            top: 60px; /* 최고 점수 위치 */
+        }
+        #timer {
+            top: 100px; /* 타이머 위치 */
+        }
+    </style>
 </head>
-<body>
-    
+<body onclick="handleBackgroundClick(event)">
+    <div id="counter">Count: 0</div>
+    <div id="highScore">High Score: 0</div>
+    <div id="timer">Time: 10s</div>
+    <p class="clickable">imyunchan he is god?</p>
+    <p class="clickable">imyunchan he is god?</p>
+    <p class="clickable">imyunchan he is god?</p>
+    <p class="clickable">imyunchan he is god?</p>
+
+    <script>
+        const bodyWidth = document.body.clientWidth;
+        const bodyHeight = document.body.clientHeight;
+        let count = 0; // 클릭 카운터 변수
+        let highScore = 0; // 최고 점수 변수
+        let timeLeft = 10; // 제한 시간
+        let timerInterval;
+        let moveTextInterval; // 텍스트 이동 주기 변수
+
+        function getRandomPosition() {
+            const x = Math.floor(Math.random() * (bodyWidth - 100));
+            const y = Math.floor(Math.random() * (bodyHeight - 50));
+            return { x, y };
+        }
+
+        function getRandomColor() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function getRandomFontSize() {
+            const size = (Math.random() * 2) + 1; // 1em ~ 3em 사이
+            return `${size}em`;
+        }
+
+        function moveTextRandomly() {
+            const texts = document.querySelectorAll('.clickable');
+            texts.forEach(text => {
+                const { x, y } = getRandomPosition();
+                const newColor = getRandomColor();
+                const newFontSize = getRandomFontSize();
+
+                text.style.left = `${x}px`;
+                text.style.top = `${y}px`;
+                text.style.color = newColor;
+                text.style.fontSize = newFontSize;
+                text.style.opacity = 1;
+            });
+        }
+
+        function incrementCounter() {
+            if (timeLeft > 0) { // 시간이 남아있을 때만 카운터 증가
+                count++;
+                document.getElementById('counter').innerText = `Count: ${count}`;
+            }
+        }
+
+        function updateTimer() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                document.getElementById('timer').innerText = `Time: ${timeLeft}s`;
+            } else {
+                clearInterval(timerInterval);
+                clearInterval(moveTextInterval); // 텍스트 이동 정지
+                updateHighScore(); // 타이머 종료 시 최고 점수 업데이트
+                alert(`시간 종료! 당신이 클릭한 횟수는 ${count}입니다.`);
+                resetGame(); // 게임 초기화
+            }
+        }
+
+        function handleBackgroundClick(event) {
+            if (timeLeft > 0 && event.target === document.body) { // 배경을 클릭했을 때만 처리
+                updateHighScore(); // 배경 클릭 시 최고 점수 업데이트
+                alert("실패했습니다! 배경을 클릭할 수 없습니다.");
+                resetGame(); // 게임 초기화
+            }
+        }
+
+        function updateHighScore() {
+            if (count > highScore) {
+                highScore = count; // 최고 점수 업데이트
+                document.getElementById('highScore').innerText = `High Score: ${highScore}`;
+            }
+        }
+
+        function resetGame() {
+            count = 0; // 카운터 초기화
+            timeLeft = 10; // 시간 초기화
+            document.getElementById('counter').innerText = `Count: ${count}`;
+            document.getElementById('timer').innerText = `Time: ${timeLeft}s`;
+            moveTextRandomly(); // 텍스트 위치 변경
+            clearInterval(timerInterval); // 기존 타이머를 정지
+            clearInterval(moveTextInterval); // 텍스트 이동 정지
+            timerInterval = setInterval(updateTimer, 1000); // 1초마다 타이머 업데이트
+            moveTextInterval = setInterval(moveTextRandomly, 500); // 0.5초마다 텍스트 위치 변경
+        }
+
+        const texts = document.querySelectorAll('.clickable');
+        texts.forEach(text => {
+            text.addEventListener('click', incrementCounter);
+        });
+
+        moveTextRandomly(); // 초기 텍스트 위치 설정
+        timerInterval = setInterval(updateTimer, 1000); // 게임 시작 시 타이머 시작
+        moveTextInterval = setInterval(moveTextRandomly, 500); // 게임 시작 시 텍스트 위치 변경 주기 설정
+    </script>
 </body>
 </html>
